@@ -178,6 +178,14 @@ df['lon_resolution'] = lon_resolution
 df.to_csv('cussh-isimip-metadata.csv')
 
 #------------------------------------------------------------------------------
+# SAVE: metadata summary per model
+#------------------------------------------------------------------------------
+
+dg = df.groupby('model').nunique()
+dh = df.groupby('model')['ensemble_member','lat_resolution','lon_resolution'].agg(['unique'])
+dh.to_csv('cussh-isimip-summary.csv')
+
+#------------------------------------------------------------------------------
 print('** END')
 
 
