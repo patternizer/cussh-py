@@ -8,6 +8,8 @@ Python codebase for CUSSH project.
 ## Contents
 
 * `c3s-cds-api-cussh.py` - python api caller to download selected ISIMIP model runs from the C3S CDS using the cdsapi client
+* `downscale-nc.sh` - bash script to interpolate ISIMIP model runs from their native resolution to the CRU TS 0.5 degree resolution
+
 * `load-cussh-isimip.py` - python reader to load in downloaded netCDF-4 climate model ensemble members and extract metadata
 * `load-cussh-isimip-timeseries.py` - python reader to load in downloaded netCDF-4 climate model ensemble members and extract timeseries per variable per experiment across models
 
@@ -21,6 +23,7 @@ The first step is to clone the latest cussh-py code and step into the check out 
 The code was tested locally in a Python 3.8.11 virtual environment.
 
     $ python c3s-cds-api-cussh.py
+    $ python downscale-nc.py
     $ python load-cussh-isimip.py
     $ python load-cussh-isimip-timeseries.py
     
