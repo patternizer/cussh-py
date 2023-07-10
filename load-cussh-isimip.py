@@ -182,6 +182,8 @@ df.to_csv('cussh-isimip-metadata.csv')
 #------------------------------------------------------------------------------
 
 dg = df.groupby('model').nunique()
+dg.to_csv('cussh-isimip-counts.csv')
+
 dh = df.groupby('model')['ensemble_member','lat_resolution','lon_resolution'].agg(['unique'])
 dh.to_csv('cussh-isimip-summary.csv')
 

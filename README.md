@@ -1,3 +1,6 @@
+![image](https://github.com/patternizer/cussh-py/blob/main/PLOTS/tn90pETCCDI_historical.png)
+![image](https://github.com/patternizer/cussh-py/blob/main/PLOTS/tn90pETCCDI_ssp370.png)
+
 # cussh-py
 
 Python codebase for CUSSH project.
@@ -6,6 +9,7 @@ Python codebase for CUSSH project.
 
 * `c3s-cds-api-cussh.py` - python api caller to download selected ISIMIP model runs from the C3S CDS using the cdsapi client
 * `load-cussh-isimip.py` - python reader to load in downloaded netCDF-4 climate model ensemble members and extract metadata
+* `load-cussh-isimip-timeseries.py` - python reader to load in downloaded netCDF-4 climate model ensemble members and extract timeseries per variable per experiment across models
 
 The first step is to clone the latest cussh-py code and step into the check out directory: 
 
@@ -18,6 +22,7 @@ The code was tested locally in a Python 3.8.11 virtual environment.
 
     $ python c3s-cds-api-cussh.py
     $ python load-cussh-isimip.py
+    $ python load-cussh-isimip-timeseries.py
     
 Observations and projection source data extracted from C3S CDS are available on request.
 
