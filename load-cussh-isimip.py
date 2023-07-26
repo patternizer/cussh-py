@@ -3,8 +3,8 @@
 #------------------------------------------------------------------------------
 # PROGRAM: load-cussh-isimip.py
 #------------------------------------------------------------------------------
-# Version 0.1
-# 7 July, 2023
+# Version 0.2
+# 11 July, 2023
 # Michael Taylor
 # https://patternizer.github.io
 # michael DOT a DOT taylor AT uea DOT ac DOT uk
@@ -13,34 +13,22 @@
 #------------------------------------------------------------------------------
 # IMPORT PYTHON LIBRARIES
 #------------------------------------------------------------------------------
-
 # Dataframe libraries:
 import numpy as np
 import pandas as pd
 import xarray as xr
-#import pickle
-#import netCDF4
-#from datetime import datetime
-
 # OS libraries:
 import os
 import glob
 import sys
 import time
-
-# Plotting libraries:
-#import matplotlib.pyplot as plt; plt.close('all')
-#from pandas.plotting import register_matplotlib_converters
-#from matplotlib import rcParams
-#register_matplotlib_converters()
-#import matplotlib.dates as mdates
-#import seaborn as sns; sns.set()
-
 #------------------------------------------------------------------------------
 
 #------------------------------------------------------------------------------
 # SETTINGS: 
 #------------------------------------------------------------------------------
+
+use_regridded = True # [ True (default), False ]
 
 versions = list([
             '1.0', '2_0',
@@ -127,17 +115,13 @@ temporal_aggregation = []
 period = []
 ensemble_member = []
 model = []
-
 lon_resolution = []
 lat_resolution = []
 
-for i in range(len(models)):
-       
-    modeldir = 'DATA/' + models[i] + '/'
-    filelist = sorted( glob.glob( modeldir + '*.nc' ), reverse = False )
+if use_regridded == True:
     
-    # print(filelist)    
-    # time.sleep(1.0)    # seconds        
+    modeldir = 'DATA/regridded/'
+    filelist = sorted( glob.glob( modeldir + '*.nc' ), reverse = False )
 
     for j in range(len(filelist)):
 
@@ -159,6 +143,33 @@ for i in range(len(models)):
         ensemble_member.append(words[4])
         model.append(words[2])
 
+else:
+    
+    for i in range(len(models)):
+           
+        modeldir = 'DATA/' + models[i] + '/'
+        filelist = sorted( glob.glob( modeldir + '*.nc' ), reverse = False )
+        
+        for j in range(len(filelist)):
+    
+            file = filelist[j]
+            ds = xr.open_dataset( file, decode_times=False )
+            dlon = (ds.lon[1] - ds.lon[0]).values + 0
+            dlat = (ds.lat[1] - ds.lat[0]).values + 0
+            lat_resolution.append( dlat )
+            lon_resolution.append( dlon )
+            
+            words = filelist[j].replace(modeldir,'').split('_')
+    
+            version.append(words[8].split('.')[0])
+            variable.append(words[0])
+            product_type.append(words[5])
+            experiment.append(words[3])
+            temporal_aggregation.append(words[1])
+            period.append(words[7])
+            ensemble_member.append(words[4])
+            model.append(words[2])
+
 df['version'] = version
 df['variable'] = variable
 df['product_type'] = product_type
@@ -167,26 +178,28 @@ df['temporal_aggregation'] = temporal_aggregation
 df['period'] = period
 df['ensemble_member'] = ensemble_member
 df['model'] = model
-
 df['lat_resolution'] = lat_resolution
 df['lon_resolution'] = lon_resolution
 
 #------------------------------------------------------------------------------
-# SAVE: metadata dataframe
-#------------------------------------------------------------------------------
-
-df.to_csv('cussh-isimip-metadata.csv')
-
-#------------------------------------------------------------------------------
-# SAVE: metadata summary per model
+# SAVE: metadata dataframe and variable counts and summary per model
 #------------------------------------------------------------------------------
 
 dg = df.groupby('model').nunique()
-dg.to_csv('cussh-isimip-counts.csv')
-
 dh = df.groupby('model')['ensemble_member','lat_resolution','lon_resolution'].agg(['unique'])
-dh.to_csv('cussh-isimip-summary.csv')
 
+if use_regridded == True:
+    
+    df.to_csv('cussh-isimip-regridded-metadata.csv')
+    dg.to_csv('cussh-isimip-regridded-counts.csv')
+    dh.to_csv('cussh-isimip-regridded-summary.csv')
+
+else:
+
+    df.to_csv('cussh-isimip-metadata.csv')
+    dg.to_csv('cussh-isimip-counts.csv')
+    dh.to_csv('cussh-isimip-summary.csv')
+    
 #------------------------------------------------------------------------------
 print('** END')
 

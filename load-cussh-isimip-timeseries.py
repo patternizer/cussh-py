@@ -3,8 +3,8 @@
 #------------------------------------------------------------------------------
 # PROGRAM: load-cussh-isimip-timeseries.py
 #------------------------------------------------------------------------------
-# Version 0.1
-# 8 July, 2023
+# Version 0.3
+# 24 July, 2023
 # Michael Taylor
 # https://patternizer.github.io
 # michael DOT a DOT taylor AT uea DOT ac DOT uk
@@ -40,7 +40,18 @@ import matplotlib.dates as mdates
 # SETTINGS: 
 #------------------------------------------------------------------------------
 
-location_lat, location_lon = -1.28638, 36.817222 # Nairobi
+use_regridded = True    # [ True (default), False ]
+plot_experiment = False # [ True, False (default) ]
+
+#city, location_lat, location_lon = 'London', 51.5, -0.1
+#city, location_lat, location_lon = 'Rennes', 48.1, -1.7
+#city, location_lat, location_lon = 'Kisumu', -0.1, 34.8
+#city, location_lat, location_lon = 'Nairobi', -1.3, 36.8
+city, location_lat, location_lon = 'Homa', -0.5, 34.5
+#city, location_lat, location_lon = 'Beijing', 39.9, 116.4
+#city, location_lat, location_lon = 'Ningbo', 29.9, 121.6
+
+nsmooth = 10 # n-yr MA
 year_start, year_end = 1850, 2100
  
 fontsize = 12
@@ -49,7 +60,7 @@ fontsize = 12
 # LOAD: C3S CDS ISIMIP model metadata file
 #------------------------------------------------------------------------------
 
-di = pd.read_csv( 'cussh-isimip-metadata.csv', index_col=0 )
+di = pd.read_csv( 'OUT/cussh-isimip-metadata.csv', index_col=0 )
 variables = di.variable.unique()
 projections = di.experiment.unique()
 modellist = di.model.unique()
@@ -59,12 +70,21 @@ models = [ modellist[i].replace('-','_').lower() for i in range(len(modellist)) 
 # LOAD: timeseries for each variable per projection for all models into separate dataframes
 #------------------------------------------------------------------------------
 
-filelist = []
-for m in range(len(models)):      
-         
-    modeldir = 'DATA/' + models[m] + '/'
-    filesdir = sorted( glob.glob( modeldir + '*.nc' ), reverse = False )
-    filelist = filelist + list(filesdir)
+# NB: this is now run on external HDD
+
+if use_regridded == True:
+
+    modeldir = 'DATA/regridded-experiments/'
+    filelist = sorted( glob.glob( modeldir + '*.nc' ), reverse = False )
+
+else:
+    
+    filelist = []
+    for m in range(len(models)):      
+             
+        modeldir = 'DATA/' + models[m] + '/'
+        filesdir = sorted( glob.glob( modeldir + '*.nc' ), reverse = False )
+        filelist = filelist + list(filesdir)
 
 for v in range(len(variables)):
 
@@ -108,43 +128,52 @@ for v in range(len(variables)):
                     
                 dv = pd.DataFrame( {'datetimes':t, model:ts} )    
                 df = df.merge(dv, how='left', on='datetimes')
-                
+                        
         #------------------------------------------------------------------------------
         # SAVE: dataframe for each variable per projection for all models
         #------------------------------------------------------------------------------
+                            
+        df.to_pickle( 'RUN/' + variables[v] + '_' + projections[p] + '_' + city + '.pkl', compression='bz2')
+
+        if plot_experiment == True:
+
+            #------------------------------------------------------------------------------
+            # PLOT
+            #------------------------------------------------------------------------------
                     
-        df.to_pickle( 'RUN/' + variables[v] + '_' + projections[p] + '.pkl', compression='bz2')
-
-        #------------------------------------------------------------------------------
-        # PLOT
-        #------------------------------------------------------------------------------
-        
-        dg = df.copy().set_index('datetimes').rolling(10, center=True).mean()                   
-        colors = plt.cm.viridis(np.linspace(0,1,len(dg.columns)))
-
-        figstr = variables[v] + '_' + projections[p] + '.png'
-        titlestr = 'ISIMIP CMIP6 models: ' + variables[v] + ': ' + projections[p] + ' (10-yr MA)'
-                
-        fig, ax = plt.subplots(figsize=(15,10))     
-        for i in range(len(dg.columns)): plt.plot(dg.index, dg[dg.columns[i]].values, color=colors[i], lw=1, label=dg.columns[i], zorder=1)    
+            dg = df.copy().set_index('datetimes').rolling(nsmooth, center=True).mean()                   
+            colors = plt.cm.viridis(np.linspace(0,1,len(dg.columns)))
     
-        plt.fill_between(dg.index, np.nanpercentile(dg, 2.5, axis=1), np.nanpercentile(dg, 97.5, axis=1), color='black', edgecolor="black", linewidth=0.0, alpha=0.025, label='2.5-97.5% C.I.', zorder=11)                
-        plt.fill_between(dg.index, np.nanpercentile(dg, 5, axis=1), np.nanpercentile(dg, 95, axis=1), color='black', edgecolor="black", linewidth=0.0, alpha=0.05, label='5-95% C.I.', zorder=12)                
-        plt.fill_between(dg.index, np.nanpercentile(dg, 10, axis=1), np.nanpercentile(dg, 90, axis=1), color='black', edgecolor="black", linewidth=0.0, alpha=0.1, label='10-90% C.I.', zorder=13)                
-        plt.fill_between(dg.index, np.nanpercentile(dg, 25, axis=1), np.nanpercentile(dg, 75, axis=1), color='black', edgecolor="black", linewidth=0.0, alpha=0.2, label='25-75% C.I.', zorder=14)                
-        plt.fill_between([0,1],[0,1], color="none", hatch="X", edgecolor="b", linewidth=0.0)
-        plt.plot(dg.index, np.nanpercentile(dg, 50,axis=1), color='black', lw=3, label='Median')
-
-        plt.xlim( pd.to_datetime('1850', format='%Y'), pd.to_datetime('2100', format='%Y'))
-        plt.xlabel('Year', fontsize=fontsize)
-        plt.ylabel('Value', fontsize=fontsize)
-
-        fig.legend(loc='lower left', bbox_to_anchor=(0.1, -0.1), markerscale=1, ncol=6, facecolor='white', framealpha=0.9, fontsize=10)    
-
-        plt.tick_params(labelsize=fontsize)    
-        plt.title(titlestr, fontsize=fontsize)
-        plt.savefig(figstr, dpi=300, bbox_inches='tight')
-        plt.close('all')
+            if use_regridded == True:
+                
+                figstr = variables[v] + '_' + projections[p] + '_' + 'regridded' + '_' + city + '.png'
+                titlestr = 'ISIMIP CMIP6 models (regridded to 0.5 degrees): ' + variables[v] + ': ' + projections[p] + ' (' + str(nsmooth) + '-yr MA)'  + ': ' + city + ' (' + str(np.round(location_lat,3)) + '°N,' + str(np.round(location_lon,3)) + '°E)'
+    
+            else:
+                
+                figstr = variables[v] + '_' + projections[p] + '_' + city + '.png'
+                titlestr = 'ISIMIP CMIP6 models: ' + variables[v] + ': ' + projections[p] + ' (' + str(nsmooth) + '-yr MA)' + ': ' + city + ' (' + str(np.round(location_lat,3)) + '°N,' + str(np.round(location_lon,3)) + '°E)'
+                    
+            fig, ax = plt.subplots(figsize=(15,10))     
+            for i in range(len(dg.columns)): plt.plot(dg.index, dg[dg.columns[i]].values, color=colors[i], lw=1, label=dg.columns[i], zorder=1)    
+        
+            plt.fill_between(dg.index, np.nanpercentile(dg, 2.5, axis=1), np.nanpercentile(dg, 97.5, axis=1), color='black', edgecolor="black", linewidth=0.0, alpha=0.025, label='2.5-97.5% C.I.', zorder=11)                
+            plt.fill_between(dg.index, np.nanpercentile(dg, 5, axis=1), np.nanpercentile(dg, 95, axis=1), color='black', edgecolor="black", linewidth=0.0, alpha=0.05, label='5-95% C.I.', zorder=12)                
+            plt.fill_between(dg.index, np.nanpercentile(dg, 10, axis=1), np.nanpercentile(dg, 90, axis=1), color='black', edgecolor="black", linewidth=0.0, alpha=0.1, label='10-90% C.I.', zorder=13)                
+            plt.fill_between(dg.index, np.nanpercentile(dg, 25, axis=1), np.nanpercentile(dg, 75, axis=1), color='black', edgecolor="black", linewidth=0.0, alpha=0.2, label='25-75% C.I.', zorder=14)                
+            plt.fill_between([0,1],[0,1], color="none", hatch="X", edgecolor="b", linewidth=0.0)
+            plt.plot(dg.index, np.nanpercentile(dg, 50,axis=1), color='black', lw=3, label='Median')
+    
+            plt.xlim( pd.to_datetime('1850', format='%Y'), pd.to_datetime('2100', format='%Y'))
+            plt.xlabel('Year', fontsize=fontsize)
+            plt.ylabel('Value', fontsize=fontsize)
+    
+            fig.legend(loc='lower left', bbox_to_anchor=(0.1, -0.1), markerscale=1, ncol=6, facecolor='white', framealpha=0.9, fontsize=10)    
+    
+            plt.tick_params(labelsize=fontsize)    
+            plt.title(titlestr, fontsize=fontsize)
+            plt.savefig(figstr, dpi=300, bbox_inches='tight')
+            plt.close('all')
                 
 #------------------------------------------------------------------------------
 print('** END')
