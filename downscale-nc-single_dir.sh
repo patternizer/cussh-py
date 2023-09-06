@@ -20,7 +20,7 @@ mkdir -p "$output_dir" # create output_dir if it doesn't exist
 
 # Loop through the NetCDF files in directory
 
-for file in ~/Documents/REPOS/cussh-py/DATA/tmp/*.nc; do
+for file in *.nc; do
 
 	file_name=$(basename "$file" .nc) 				# Get the file name without the extension
 	output_file="$output_dir/${file_name}.nc" 		# Define the output file path

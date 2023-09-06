@@ -3,8 +3,8 @@
 #------------------------------------------------------------------------------
 # PROGRAM: load-cussh-isimip-timeseries.py
 #------------------------------------------------------------------------------
-# Version 0.3
-# 24 July, 2023
+# Version 0.4
+# 28 August, 2023
 # Michael Taylor
 # https://patternizer.github.io
 # michael DOT a DOT taylor AT uea DOT ac DOT uk
@@ -40,27 +40,47 @@ import matplotlib.dates as mdates
 # SETTINGS: 
 #------------------------------------------------------------------------------
 
-use_regridded = True    # [ True (default), False ]
-plot_experiment = False # [ True, False (default) ]
-
 #city, location_lat, location_lon = 'London', 51.5, -0.1
 #city, location_lat, location_lon = 'Rennes', 48.1, -1.7
-#city, location_lat, location_lon = 'Kisumu', -0.1, 34.8
+city, location_lat, location_lon = 'Kisumu', -0.1, 34.8
 #city, location_lat, location_lon = 'Nairobi', -1.3, 36.8
-city, location_lat, location_lon = 'Homa', -0.5, 34.5
+#city, location_lat, location_lon = 'Homa', -0.5, 34.5
 #city, location_lat, location_lon = 'Beijing', 39.9, 116.4
 #city, location_lat, location_lon = 'Ningbo', 29.9, 121.6
 
-nsmooth = 10 # n-yr MA
+use_yearly = True 		        # [True (default), False=monthly]
+use_percentile_based = True 	# [True (default), False=baseline-independent]
+
+if use_percentile_based == True:
+    if use_yearly == True:
+        vartypestr = 'regridded-etccdi-percentile-based-yearly'
+    else:
+        vartypestr = 'regridded-etccdi-percentile-based-monthly'
+else:
+    if use_yearly == True:
+        vartypestr = 'regridded-etccdi-baseline-independent-yearly'
+    else:
+        vartypestr = 'regridded-etccdi-baseline-independent-monthly'
+
+modeldir = 'DATA/' + vartypestr + '/'
+
 year_start, year_end = 1850, 2100
  
+# PLOT PARAMETERS (only)
+
+plot_experiment = False # [True, False (default) ]
 fontsize = 12
+nsmooth = 30 # n-yr MA
 
 #------------------------------------------------------------------------------
 # LOAD: C3S CDS ISIMIP model metadata file
 #------------------------------------------------------------------------------
 
-di = pd.read_csv( 'OUT/cussh-isimip-metadata.csv', index_col=0 )
+df = pd.read_csv( 'OUT/cussh-isimip' + '-' + vartypestr + '-' + 'metadata.csv', index_col=0 )
+dh = pd.read_csv( 'OUT/cussh-isimip' + '-' + vartypestr + '-' + 'counts.csv', index_col=0 )
+
+di = df.copy()
+
 variables = di.variable.unique()
 projections = di.experiment.unique()
 modellist = di.model.unique()
@@ -70,21 +90,7 @@ models = [ modellist[i].replace('-','_').lower() for i in range(len(modellist)) 
 # LOAD: timeseries for each variable per projection for all models into separate dataframes
 #------------------------------------------------------------------------------
 
-# NB: this is now run on external HDD
-
-if use_regridded == True:
-
-    modeldir = 'DATA/regridded-experiments/'
-    filelist = sorted( glob.glob( modeldir + '*.nc' ), reverse = False )
-
-else:
-    
-    filelist = []
-    for m in range(len(models)):      
-             
-        modeldir = 'DATA/' + models[m] + '/'
-        filesdir = sorted( glob.glob( modeldir + '*.nc' ), reverse = False )
-        filelist = filelist + list(filesdir)
+filelist = sorted( glob.glob( modeldir + '*.nc' ), reverse = False )
 
 for v in range(len(variables)):
 
@@ -123,8 +129,8 @@ for v in range(len(variables)):
                 else:
                     ts = ds[parameter].sel( lat = location_lat, lon = location_lon, method='nearest').values
                                 
-                ts[ts < -1.0e6] = np.nan
-                ts[ts > 1.0e6] = np.nan
+                #ts[ts < -1.0e6] = np.nan
+                #ts[ts > 1.0e6] = np.nan
                     
                 dv = pd.DataFrame( {'datetimes':t, model:ts} )    
                 df = df.merge(dv, how='left', on='datetimes')
@@ -144,16 +150,9 @@ for v in range(len(variables)):
             dg = df.copy().set_index('datetimes').rolling(nsmooth, center=True).mean()                   
             colors = plt.cm.viridis(np.linspace(0,1,len(dg.columns)))
     
-            if use_regridded == True:
-                
-                figstr = variables[v] + '_' + projections[p] + '_' + 'regridded' + '_' + city + '.png'
-                titlestr = 'ISIMIP CMIP6 models (regridded to 0.5 degrees): ' + variables[v] + ': ' + projections[p] + ' (' + str(nsmooth) + '-yr MA)'  + ': ' + city + ' (' + str(np.round(location_lat,3)) + '°N,' + str(np.round(location_lon,3)) + '°E)'
-    
-            else:
-                
-                figstr = variables[v] + '_' + projections[p] + '_' + city + '.png'
-                titlestr = 'ISIMIP CMIP6 models: ' + variables[v] + ': ' + projections[p] + ' (' + str(nsmooth) + '-yr MA)' + ': ' + city + ' (' + str(np.round(location_lat,3)) + '°N,' + str(np.round(location_lon,3)) + '°E)'
-                    
+            figstr = variables[v] + '_' + projections[p] + '_' + 'regridded' + '_' + city + '.png'
+            titlestr = 'ISIMIP CMIP6 models (regridded to 0.5 degrees): ' + variables[v] + ': ' + projections[p] + ' (' + str(nsmooth) + '-yr MA)'  + ': ' + city + ' (' + str(np.round(location_lat,3)) + '°N,' + str(np.round(location_lon,3)) + '°E)'
+                        
             fig, ax = plt.subplots(figsize=(15,10))     
             for i in range(len(dg.columns)): plt.plot(dg.index, dg[dg.columns[i]].values, color=colors[i], lw=1, label=dg.columns[i], zorder=1)    
         
