@@ -61,11 +61,15 @@ filename1 = 'OUT/stats-regridded-etccdi-percentile-based-yearly-bias_adjusted-' 
 filename2 = 'OUT/stats-regridded-etccdi-baseline-independent-yearly-bias_adjusted-' + city + '.csv'
 filename3 = 'OUT/stats-regridded-tas-monthly-bias_adjusted-' + city + '.csv'
 filename4 = 'OUT/stats-regridded-pr-monthly-bias_adjusted-' + city + '.csv'
+
+filename5 = 'OUT/stats-regridded-hi-daily-' + city + '.csv'
+
 df1 = pd.read_csv( filename1, index_col=0)
 df2 = pd.read_csv( filename2, index_col=0)
 df3 = pd.read_csv( filename3, index_col=0)
 df4 = pd.read_csv( filename4, index_col=0)
-df = pd.concat([df1, df2, df3, df4])
+df5 = pd.read_csv( filename5, index_col=0)
+df = pd.concat([df1, df2, df3, df4, df5])
 df = df.sort_index(ascending=True)
 df.to_csv('stats-regridded-etccdi-yearly-bias_adjusted-' + city + '.csv')
 
@@ -73,11 +77,15 @@ filename1 = 'OUT/stats-1981-2010-difference-regridded-etccdi-percentile-based-ye
 filename2 = 'OUT/stats-1981-2010-difference-regridded-etccdi-baseline-independent-yearly-bias_adjusted-' + city + '.csv'
 filename3 = 'OUT/stats-1981-2010-difference-regridded-tas-monthly-bias_adjusted-' + city + '.csv'
 filename4 = 'OUT/stats-1981-2010-difference-regridded-pr-monthly-bias_adjusted-' + city + '.csv'
+
+filename5 = 'OUT/stats-1981-2010-difference-regridded-hi-daily-' + city + '.csv'
+
 df1 = pd.read_csv( filename1, index_col=0)
 df2 = pd.read_csv( filename2, index_col=0)
 df3 = pd.read_csv( filename3, index_col=0)
 df4 = pd.read_csv( filename4, index_col=0)
-df = pd.concat([df1, df2, df3, df4])
+df5 = pd.read_csv( filename5, index_col=0)
+df = pd.concat([df1, df2, df3, df4, df5])
 df = df.sort_index(ascending=True)
 df.to_csv('stats-1981-2010-difference-regridded-etccdi-yearly-bias_adjusted-' + city + '.csv')
     
