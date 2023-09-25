@@ -336,7 +336,7 @@ for v in range(len(variables)):
     
     plt.fill_between(df_ssp126_p05[df_ssp126_p05.index.year<=2015].index, df_ssp126_p05[df_ssp126_p05.index.year<=2015].values, df_ssp126_p95[df_ssp126_p95.index.year<=2015].values, color='lightgrey', edgecolor="black", linewidth=0.0, alpha=0.5, label='Historical (5-95% CI)', zorder=11)                
     plt.fill_between(df_ssp126_p05[df_ssp126_p05.index.year>=2015].index, df_ssp126_p05[df_ssp126_p05.index.year>=2015].values, df_ssp126_p95[df_ssp126_p95.index.year>=2015].values, color='lime', edgecolor="green", linewidth=0.0, alpha=0.5, label='SSP1-2.6 (5-95% CI)',zorder=12)
-    plt.fill_between(df_ssp370_p05[df_ssp370_p05.index.year<=2015].index, df_ssp370_p05[df_ssp370_p05.index.year<=2015].values, df_ssp370_p95[df_ssp370_p95.index.year<=2015].values, color='lightgrey', edgecolor="black", linewidth=0.0, alpha=0.5, label='Historical (5-95% CI)',zorder=11)
+    plt.fill_between(df_ssp370_p05[df_ssp370_p05.index.year<=2015].index, df_ssp370_p05[df_ssp370_p05.index.year<=2015].values, df_ssp370_p95[df_ssp370_p95.index.year<=2015].values, color='lightgrey', edgecolor="black", linewidth=0.0, alpha=0.5, zorder=11)
     plt.fill_between(df_ssp370_p05[df_ssp370_p05.index.year>=2015].index, df_ssp370_p05[df_ssp370_p05.index.year>=2015].values, df_ssp370_p95[df_ssp370_p95.index.year>=2015].values, color='orange', edgecolor="red", linewidth=0.0, alpha=0.5, label='SSP3-7.0 (5-95% CI)',zorder=12)
 
     plt.plot(df_ssp126_p05[df_ssp126_p05.index.year<=2015].index, df_ssp126_p05[df_ssp126_p05.index.year<=2015].values, color='black', alpha=0.5, lw=3, zorder=101)

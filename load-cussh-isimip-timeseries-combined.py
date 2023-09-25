@@ -58,11 +58,10 @@ city, location_lat, location_lon = 'London', 51.5, -0.1
 #city, location_lat, location_lon = 'Beijing', 39.9, 116.4
 #city, location_lat, location_lon = 'Ningbo', 29.9, 121.6
 
-use_yearly = True 		        # [True (default), False=monthly]
-
 use_percentile_based = True 	# [True (default), False=baseline-independent]
 use_bias_adjustment = True      # [True (default), False]
 
+use_yearly = True 		        # [True (default), False=monthly]
 if use_percentile_based == True:
     if use_yearly == True:
         vartypestr = 'regridded-etccdi-percentile-based-yearly'
@@ -406,7 +405,7 @@ for v in range(len(variables)):
     
     plt.fill_between(df_ssp126_p05[df_ssp126_p05.index.year<=2015].index, df_ssp126_p05[df_ssp126_p05.index.year<=2015].values, df_ssp126_p95[df_ssp126_p95.index.year<=2015].values, color='lightgrey', edgecolor="black", linewidth=0.0, alpha=0.5, label='Historical (5-95% CI)', zorder=11)                
     plt.fill_between(df_ssp126_p05[df_ssp126_p05.index.year>=2015].index, df_ssp126_p05[df_ssp126_p05.index.year>=2015].values, df_ssp126_p95[df_ssp126_p95.index.year>=2015].values, color='lime', edgecolor="green", linewidth=0.0, alpha=0.5, label='SSP1-2.6 (5-95% CI)',zorder=12)
-    plt.fill_between(df_ssp370_p05[df_ssp370_p05.index.year<=2015].index, df_ssp370_p05[df_ssp370_p05.index.year<=2015].values, df_ssp370_p95[df_ssp370_p95.index.year<=2015].values, color='lightgrey', edgecolor="black", linewidth=0.0, alpha=0.5, label='Historical (5-95% CI)',zorder=11)
+    plt.fill_between(df_ssp370_p05[df_ssp370_p05.index.year<=2015].index, df_ssp370_p05[df_ssp370_p05.index.year<=2015].values, df_ssp370_p95[df_ssp370_p95.index.year<=2015].values, color='lightgrey', edgecolor="black", linewidth=0.0, alpha=0.5, zorder=11)
     plt.fill_between(df_ssp370_p05[df_ssp370_p05.index.year>=2015].index, df_ssp370_p05[df_ssp370_p05.index.year>=2015].values, df_ssp370_p95[df_ssp370_p95.index.year>=2015].values, color='orange', edgecolor="red", linewidth=0.0, alpha=0.5, label='SSP3-7.0 (5-95% CI)',zorder=12)
 
     plt.plot(df_ssp126_p05[df_ssp126_p05.index.year<=2015].index, df_ssp126_p05[df_ssp126_p05.index.year<=2015].values, color='black', alpha=0.5, lw=3, zorder=101)
