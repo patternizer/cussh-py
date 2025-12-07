@@ -1,8 +1,6 @@
-![image](https://github.com/patternizer/cussh-py/blob/main/PLOTS/tnxETCCDI_SSPs_with_historical_bias_adjusted-London.png)
-
 # cussh-py
 
-Python codebase for CUSSH project.
+Python codebase for CUSSH project funded by UEA PVC award 2023.
 
 ## Contents
 
