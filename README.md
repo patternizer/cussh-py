@@ -43,6 +43,6 @@ The code is distributed under terms and conditions of the [Open Government Licen
 
 ## Contact information
 
-* [Michael Taylor](michael.a.taylor@uea.ac.uk)
+* [Michael Taylor](michael.taylor@cefas.gov.uk)
 
 
